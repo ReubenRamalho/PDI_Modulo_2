@@ -104,5 +104,5 @@ Feel free to improve the project! You can:
 
 ---
 
-📧 **Contact:** [Your Email/Username]
+📧 **Contact:**
 - Email: reuben.ramalho@academico.ufpb.br
