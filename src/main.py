@@ -16,6 +16,16 @@ from image_utils import load_image, save_image, absolute_value, normalize_0_255
 from filter_utils import load_filter_from_file
 from correlation import correlate2d_rgb
 
+def resolve_path(path):
+    """
+    Resolves the given path to an absolute path.
+    If the path is already absolute, it remains unchanged.
+    
+    :param path: The file path to resolve
+    :return: Absolute path
+    """
+    return os.path.abspath(path)
+
 def is_sobel_filter(mask):
     """
     Detects if a filter is Sobel (horizontal or vertical) for any size.
@@ -58,20 +68,28 @@ def parse_args():
     
     parser.add_argument("input_image", type=str, help="Path to the input image.")
     parser.add_argument("filter", type=str, help="Path to the filter file.")
-    parser.add_argument("-o", "--output", type=str, default=None, help="Path to save the filtered image. (Optional)")
+    parser.add_argument(
+        "-o", "--output", type=str, default=None,
+        help="Path to save the filtered image. If no extension is provided, the image is saved as PNG by default.")
 
     return parser.parse_args()
+
 
 def main():
     # ========== 1. PARSE ARGUMENTS ===========
     args = parse_args()
     
-    input_image_path = args.input_image
-    filter_path = args.filter
-    output_image_path = args.output
+    # Resolve absolute paths for input image and filter
+    input_image_path = resolve_path(args.input_image)
+    filter_path = resolve_path(args.filter)
 
     # If no output path is provided, create an automatic name
-    if output_image_path is None:
+    if args.output:
+        output_image_path = resolve_path(args.output)
+        # Ensure the output file has an extension
+        if not os.path.splitext(output_image_path)[1]:  
+            output_image_path += ".png"  # Default to PNG
+    else:
         base_name, extension = os.path.splitext(input_image_path)
         output_image_path = f"{base_name}_filtered{extension}"
 
