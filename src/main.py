@@ -30,30 +30,30 @@ def is_sobel_filter(mask):
     """
     Detects if a filter is Sobel (horizontal or vertical) for any size.
 
-    - Horizontal Sobel: values increase from left to right.
-    - Vertical Sobel: values increase from top to bottom.
+    - Horizontal Sobel: values increase from top to bottom.
+    - Vertical Sobel: values increase from left to right.
 
     :param mask: Filter matrix
     :return: True if it is Sobel, False otherwise
     """
     m, n = len(mask), len(mask[0])  # Filter dimensions
 
-    # Check if it is Horizontal Sobel (values increase from left to right)
+    # Check if it is Horizontal Sobel (values increase from top to bottom)
     is_horizontal = True
     for i in range(m):
         for j in range(n):
-            if j < n // 2 and mask[i][j] >= 0:  # Left side should be negative
+            if i < m // 2 and mask[i][j] >= 0:  # Top should be negative
                 is_horizontal = False
-            elif j > n // 2 and mask[i][j] <= 0:  # Right side should be positive
+            elif i > m // 2 and mask[i][j] <= 0:  # Bottom should be positive
                 is_horizontal = False
-
-    # Check if it is Vertical Sobel (values increase from top to bottom)
+                
+    # Check if it is Vertical Sobel (values increase from left to right)
     is_vertical = True
     for i in range(m):
         for j in range(n):
-            if i < m // 2 and mask[i][j] >= 0:  # Top should be negative
+            if j < n // 2 and mask[i][j] >= 0:  # Left side should be negative
                 is_vertical = False
-            elif i > m // 2 and mask[i][j] <= 0:  # Bottom should be positive
+            elif j > n // 2 and mask[i][j] <= 0:  # Right side should be positive
                 is_vertical = False
 
     return is_horizontal or is_vertical  # Returns True if it is any Sobel

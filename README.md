@@ -42,7 +42,7 @@ If `-o` is not provided, the output will be saved as `input_image_filtered.png`.
 
 Filters are stored as text files, defining a **mask matrix**, with optional parameters like `OFFSET`, `STRIDE`, and `ACTIVATION`.
 
-#### 🔹 **Horizontal Sobel** (`horizontal_sobel.txt`)
+#### 🔹 **Vertical Sobel** (`vertical_sobel.txt`)
 
 ```
 3 3
