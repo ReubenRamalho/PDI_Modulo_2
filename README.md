@@ -2,16 +2,14 @@
 
 ## 📌 Overview
 
-This project applies **2D correlation** on RGB images using predefined filter masks. It includes support for **Sobel edge detection**, Gaussian blur, sharpening, and more. The system reads an image, applies a filter, and saves the processed output.
+This project **converts** RGB images to grayscale by replicating the G band in B and R, and by replicating the Y band of the YIQ system in R, G, and B.
 
 ## 📂 Project Structure
 
 ```
 ├── main.py          # Main script to run the filtering process
-├── correlation.py   # Implements 2D correlation operations
-├── filter_utils.py  # Loads filter parameters from a file
-├── image_utils.py   # Reads and writes images, provides normalization functions
-└── filters/         # Sample filter files (e.g., Sobel, Gaussian, Sharpening)
+├── conversion.py   # Implements conversion operations
+└── image_utils.py   # Reads and writes images, provides normalization functions
 ```
 
 ## 🚀 How to Use
@@ -29,56 +27,29 @@ pip install numpy pillow
 To apply a filter to an image:
 
 ```bash
-python main.py input_image.png filter.txt -o output_image.png
+python main.py input_image.png color_system -o output_image.png
 ```
 
 - `input_image.png` → Input image.
-- `filter.txt` → Filter configuration file.
+- `color_system` → Color system name (RGB or YIQ).
 - `-o output_image.png` → (Optional) Output file name.
 
 If `-o` is not provided, the output will be saved as `input_image_filtered.png`.
-
-### 3️⃣ Example Filters
-
-Filters are stored as text files, defining a **mask matrix**, with optional parameters like `OFFSET`, `STRIDE`, and `ACTIVATION`.
-
-#### 🔹 **Vertical Sobel** (`vertical_sobel.txt`)
-
-```
-3 3
--1  0  1
--2  0  2
--1  0  1
-```
-
-#### 🔹 **Gaussian Blur** (`gaussian_blur_5x5.txt`)
-
-```
-5 5
-1  4  7  4  1
-4 16 26 16  4
-7 26 41 26  7
-4 16 26 16  4
-1  4  7  4  1 
-```
 
 ## 📜 Modules Breakdown
 
 ### `main.py`
 
-- Parses command-line arguments.
-- Loads the image and filter.
-- Applies **2D correlation** to each channel (R, G, B).
-- Detects Sobel filters and applies **post-processing** (absolute value + histogram expansion).
+- Reads an image (RGB)
+- Replicate G band in B and R
+- Convert the system RGB to YIQ
+- Replicate the Y band in R, G and B
+- Saves the result with an appropriate name
 
-### `correlation.py`
+### `conversion.py`
 
-- Implements **correlate2d\_single\_channel()** for single-channel filtering.
-- Implements **correlate2d\_rgb()** to apply filters to RGB images.
-
-### `filter_utils.py`
-
-- Reads filter **mask**, **offset**, **stride**, and **activation function** from a text file.
+- Implements **replicate_g()** for replicating G band in B and R.
+- Implements **replicate_y** for calculating Y band and replicating in R, G and B.
 
 ### `image_utils.py`
 
@@ -88,17 +59,14 @@ Filters are stored as text files, defining a **mask matrix**, with optional para
 
 ## ✅ Features
 
-✔ Supports **custom filters**.
 ✔ Works with **RGB images**.
-✔ Detects and processes **Sobel filters** automatically.
-✔ Uses **stride, offset, and activation functions**.
 ✔ Saves output images after processing.
 
 ## 🤝 Contributions
 
 Feel free to improve the project! You can:
 
-- Add new filters.
+- Add new conversions.
 - Improve optimization.
 - Extend post-processing capabilities.
 
@@ -106,3 +74,4 @@ Feel free to improve the project! You can:
 
 📧 **Contact:**
 - Email: reuben.ramalho@academico.ufpb.br
+- Email: maria.bandeira@academico.ufpb.br
