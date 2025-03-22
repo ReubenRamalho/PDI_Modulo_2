@@ -8,78 +8,42 @@ Module that implements:
 
 import numpy as np
 
-def correlate2d_single_channel(
-    channel, mask, offset=0, stride=1, activation=None
-):
-    """
-    Applies 2D correlation to a single channel (2D matrix),
-    without border extension.
+def corretlated_3d_mask(mask, image):
+    imagem = np.array(image)
+    m, n, qutd_chanels_maks = mask.shape
+    qutd_chanels_image = imagem.shape[2]
+    
+    if qutd_chanels_maks != qutd_chanels_image:
+        print(f'The image has {qutd_chanels_image} channels and the mask has {qutd_chanels_maks}')
+        return None
+    
+    pivo = (int(m - 1 if m % 2 == 0 else (m-1)/2),
+            int(n - 1 if m % 2 == 0 else (n-1)/2))
+    
+    init_y, init_x = pivo
+    
+    final_y = (imagem.shape[0] - 1) - ((m-1) - pivo[0])
+    final_x = (imagem.shape[1] - 1) - ((n-1) - pivo[1])
+    
+    final_array = np.empty_like(imagem, dtype=np.int32)
+    pixel_value = 0
+    
+    for y in range(pivo[0], final_y):
+        for x in range(pivo[1], final_x):
+            cut_m = list(range(y - m - 1, y + 1)) if m % 2 == 0 else list(range(int(y - (m-1)/2), int(y + (m-1)/2 + 1)))
+            cut_n = list(range(x - n - 1, x + 1)) if n % 2 == 0 else list(range(int(x - (n-1)/2), int(x + (n-1)/2 + 1)))
 
-    :param channel: np.array 2D representing the input channel
-    :param mask: 2D list (or np.array 2D) representing the mask
-    :param offset: integer to be added after summing (bias)
-    :param stride: step size (integer > 0)
-    :param activation: if "RELU", applies ReLU after adding offset
-    :return: np.array 2D with the correlation result
-    """
-    m = len(mask)       # Number of rows in the mask
-    n = len(mask[0])    # Number of columns in the mask
+            cut = imagem[np.ix_(cut_m, cut_n, list(range(qutd_chanels_image)))] 
+                
+            pixel_value = 0
+            for i in range(m):
+                for j in range(n):
+                    for c in range(qutd_chanels_maks):
+                        pixel_value += cut[i][j][c] * mask[i][j][c]
 
-    H, W = channel.shape
-    # Output size considering stride and no padding
-    out_height = (H - m) // stride + 1
-    out_width  = (W - n) // stride + 1
+            for c in range(qutd_chanels_maks):
+                final_array[y][x][c] = pixel_value
+                #print(pixel_value, final_array[y][x][c])
+            
+    return final_array  
 
-    # Convert mask to np.array (optional)
-    mask_np = np.array(mask, dtype=np.float32)
-
-    # Create output array
-    output = np.zeros((out_height, out_width), dtype=np.float32)
-
-    # Loop over the image (without padding)
-    out_i = 0
-    for i in range(0, H - m + 1, stride):
-        out_j = 0
-        for j in range(0, W - n + 1, stride):
-
-            # Extract the corresponding region (m x n)
-            region = channel[i : i+m, j : j+n]
-
-            # Sum of element-wise multiplication
-            # Note: Correlation and convolution differ in mask flipping,
-            # but we assume it is "correlation" without flipping.
-            # If convolution were needed, we would invert the mask.
-            value = np.sum(region * mask_np)
-
-            # Apply offset if provided (item 2)
-            value += offset
-
-            # Apply activation function (ReLU) if necessary
-            if activation == "RELU":
-                value = max(0, value)
-
-            output[out_i, out_j] = value
-            out_j += 1
-        out_i += 1
-
-    return output
-
-
-def correlate2d_rgb(
-    channelR, channelG, channelB,
-    mask, offset=0, stride=1, activation=None
-):
-    """
-    Applies correlate2d_single_channel to each channel separately.
-    Returns R, G, B results.
-    """
-    outR = correlate2d_single_channel(
-        channelR, mask, offset=offset, stride=stride, activation=activation
-    )
-    outG = correlate2d_single_channel(
-        channelG, mask, offset=offset, stride=stride, activation=activation
-    )
-    outB = correlate2d_single_channel(
-        channelB, mask, offset=offset, stride=stride, activation=activation
-    )
-    return outR, outG, outB

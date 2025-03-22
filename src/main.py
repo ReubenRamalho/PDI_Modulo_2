@@ -12,9 +12,10 @@ Main script that:
 import os
 import argparse
 import numpy as np
-from image_utils import load_image, save_image, absolute_value, normalize_0_255
-from filter_utils import load_filter_from_file
-from correlation import correlate2d_rgb
+from PIL import Image
+from filter_utils import load_3d_filter_from_file
+from image_utils import abs_and_expand_hist
+from correlation import corretlated_3d_mask
 
 def resolve_path(path):
     """
@@ -36,25 +37,27 @@ def is_sobel_filter(mask):
     :param mask: Filter matrix
     :return: True if it is Sobel, False otherwise
     """
-    m, n = len(mask), len(mask[0])  # Filter dimensions
+    m, n, c = len(mask), len(mask[0]), len(mask[0][0])  # Filter dimensions
 
     # Check if it is Horizontal Sobel (values increase from top to bottom)
     is_horizontal = True
     for i in range(m):
         for j in range(n):
-            if i < m // 2 and mask[i][j] >= 0:  # Top should be negative
-                is_horizontal = False
-            elif i > m // 2 and mask[i][j] <= 0:  # Bottom should be positive
-                is_horizontal = False
+            for k in range(c):
+                if i < m // 2 and mask[i][j][k] >= 0:  # Top should be negative
+                    is_horizontal = False
+                elif i > m // 2 and mask[i][j][k] <= 0:  # Bottom should be positive
+                    is_horizontal = False
                 
     # Check if it is Vertical Sobel (values increase from left to right)
     is_vertical = True
     for i in range(m):
         for j in range(n):
-            if j < n // 2 and mask[i][j] >= 0:  # Left side should be negative
-                is_vertical = False
-            elif j > n // 2 and mask[i][j] <= 0:  # Right side should be positive
-                is_vertical = False
+            for k in range(c):
+                if j < n // 2 and mask[i][j][k] >= 0:  # Left side should be negative
+                    is_vertical = False
+                elif j > n // 2 and mask[i][j][k] <= 0:  # Right side should be positive
+                    is_vertical = False
 
     return is_horizontal or is_vertical  # Returns True if it is any Sobel
 
@@ -94,49 +97,31 @@ def main():
         output_image_path = f"{base_name}_filtered{extension}"
 
     # ========== 2. READ IMAGE ===========
-    (R, G, B), (H, W) = load_image(input_image_path)
-    print(f"Image loaded: {input_image_path} ({H}x{W})")
+    image = Image.open(input_image_path)
+    print(f"Image loaded: {input_image_path} ({image.size[1]}x{image.size[0]})")
 
     # ========== 3. READ FILTER ===========
-    filter_info = load_filter_from_file(filter_path)
-    m = filter_info["m"]
-    n = filter_info["n"]
-    mask = filter_info["mask"]
-    offset = filter_info["offset"] if filter_info["offset"] is not None else 0
-    stride = filter_info["stride"] if filter_info["stride"] else 1
-    activation = filter_info["activation"] if filter_info["activation"] else None
+    mask = load_3d_filter_from_file(filter_path)
 
-    print("Filter successfully loaded:")
-    print(f"Dimensions: {m}x{n}")
-    print("Mask:")
     for row in mask:
         print(row)
-    print(f"Offset: {offset}")
-    print(f"Stride: {stride}")
-    print(f"Activation: {activation}")
 
     # ========== 4. APPLY 2D CORRELATION ===========
-    outR, outG, outB = correlate2d_rgb(
-        R, G, B,
-        mask=mask,
-        offset=offset,
-        stride=stride,
-        activation=activation
-    )
+    out = corretlated_3d_mask(mask, image)
 
     # ========== 5. DETECT SOBEL FILTER ===========
     if is_sobel_filter(mask):
         print("Filter detected as Sobel (horizontal or vertical). Applying post-processing...")
         
-        # 5.1 Apply absolute value (|x|)
-        outR, outG, outB = absolute_value(outR, outG, outB)
-
-        # 5.2 Expand histogram to [0,255]
-        outR, outG, outB = normalize_0_255(outR, outG, outB)
+        out = abs_and_expand_hist(out)
+    
+    else:
+        out = abs_and_expand_hist(out)
 
     # ========== 6. SAVE RESULT ===========
-    save_image(output_image_path, outR, outG, outB)
+    Image.fromarray(out).save(output_image_path, "JPEG")
     print(f"Filtered image saved at: {output_image_path}")
 
 if __name__ == "__main__":
     main()
+    #load_3d_filter_from_file('filters/sobel_h_3d.txt')
