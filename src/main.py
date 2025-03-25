@@ -103,9 +103,6 @@ def main():
     # ========== 3. READ FILTER ===========
     mask = load_3d_filter_from_file(filter_path)
 
-    for row in mask:
-        print(row)
-
     # ========== 4. APPLY 2D CORRELATION ===========
     out = corretlated_3d_mask(mask, image)
 
@@ -116,12 +113,11 @@ def main():
         out = abs_and_expand_hist(out)
     
     else:
-        out = abs_and_expand_hist(out)
+        out = out.astype(np.uint8)
 
     # ========== 6. SAVE RESULT ===========
-    Image.fromarray(out).save(output_image_path, "JPEG")
+    Image.fromarray(out).save(output_image_path, "PNG")
     print(f"Filtered image saved at: {output_image_path}")
 
 if __name__ == "__main__":
     main()
-    #load_3d_filter_from_file('filters/sobel_h_3d.txt')
