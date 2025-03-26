@@ -31,10 +31,10 @@ def correlate2d_single_channel(
     out_width  = (W - n) // stride + 1
 
     # Convert mask to np.array (optional)
-    mask_np = np.array(mask, dtype=np.float32)
+    mask_np = np.array(mask, dtype=np.int32)
 
     # Create output array
-    output = np.zeros((out_height, out_width), dtype=np.float32)
+    output = np.zeros((out_height, out_width), dtype=np.int32)
 
     # Loop over the image (without padding)
     out_i = 0

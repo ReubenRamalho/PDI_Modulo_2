@@ -16,7 +16,7 @@ def load_image(path):
     :return: (channelR, channelG, channelB), (height, width)
     """
     img = Image.open(path).convert("RGB")  # Ensure 3 channels
-    arr = np.array(img, dtype=np.float32)  # [H, W, 3]
+    arr = np.array(img, dtype=np.int32)  # [H, W, 3]
 
     # Separate each channel:
     # arr[:, :, 0] => R, arr[:, :, 1] => G, arr[:, :, 2] => B
