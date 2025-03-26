@@ -116,7 +116,7 @@ def main():
         out = out.astype(np.uint8)
 
     # ========== 6. SAVE RESULT ===========
-    Image.fromarray(out).save(output_image_path, "PNG")
+    Image.fromarray(out).save(output_image_path)
     print(f"Filtered image saved at: {output_image_path}")
 
 if __name__ == "__main__":
